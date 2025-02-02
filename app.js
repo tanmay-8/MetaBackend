@@ -36,9 +36,9 @@ const getNextPid = async () => {
 
 const sendMailNew = async (email, pid) => {
     try {
-        await sendMail(task.email, task.pid);
+        await sendMail(email, pid);
         await Participant.updateOne(
-            { pid: task.pid },
+            { pid: pid },
             { $set: { mailSent: true } }
         );
     } catch (error) {
