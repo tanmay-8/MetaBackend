@@ -2,7 +2,7 @@ const nodemailer = require("nodemailer");
 
 require("dotenv").config();
 
-const sendMail = async (email, pid) => {
+const sendMail = async (email, participants) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.BACKEND_MAIL_HOST,
@@ -11,12 +11,6 @@ const sendMail = async (email, pid) => {
       auth: {
         user: process.env.BACKEND_MAIL_USER,
         pass: process.env.BACKEND_MAIL_PASSWORD,
-      },
-      pool: true,
-      connectionTimeout: 300000,
-      dnsTimeout: 300000,
-      tls: {
-        rejectUnauthorized: false,
       },
     });
 
@@ -182,9 +176,15 @@ const sendMail = async (email, pid) => {
                     <strong><em>15th & 16th of February, 2025</em></strong
                     >, focusing on Docker & Kubernetes.💜
                   </p>
-                  <p>
-                    <strong>Participant ID:</strong> <span style="font-weight: bold; color: #4879e2;"> Meta_${pid} </span>
-                  </p>
+                  <div>
+                    <p><strong>Participant Names:</strong></p>
+                    <ul>
+                      ${participants.map(
+        (participant) => `<li>${participant.name}</li>`
+      )}
+                    </ul>
+                    </ul>
+                  </div>
                   You will have access to all the sessions and activities we
                   have scheduled for the event as a registered participant.
                   <br />

@@ -34,17 +34,7 @@ const getNextPid = async () => {
     return counter.seq;
 };
 
-const sendMailNew = async (email, pid) => {
-    try {
-        await sendMail(email, pid);
-        await Participant.updateOne(
-            { pid: pid },
-            { $set: { mailSent: true } }
-        );
-    } catch (error) {
-        console.error(error);
-    }
-};
+
 
 app.post("/register", upload.single("transactionImage"), async (req, res) => {
     try {
@@ -59,18 +49,15 @@ app.post("/register", upload.single("transactionImage"), async (req, res) => {
             return res.status(500).json({ error: "Image upload failed" });
 
         const participantIds = [];
-        const emailTasks = [];
+        const participantsNamesEmails = []
 
         for (const user of JSON.parse(participants)) {
             const pid = await getNextPid();
             const participant = await Participant.create({ pid, ...user });
             participantIds.push(participant.pid);
-
-            // Collect emails to send later
-            emailTasks.push({ email: participant.email, pid });
+            participantsNamesEmails.push({ name: participant.name, email: participant.email });
         }
 
-        // Save registration data
         const registration = await Registration.create({
             numOfParticipants: participantIds.length,
             participants: participantIds,
@@ -78,17 +65,11 @@ app.post("/register", upload.single("transactionImage"), async (req, res) => {
             transactionId,
             transactionImage: uploadResult.link,
         });
-
-        // Respond immediately
+        sendMail(participantsNamesEmails[0].email, participantsNamesEmails);
         res.status(201).json({
             message: "Registration successful",
             data: registration,
         });
-
-        for (const task of emailTasks) {
-            sendMailNew(task.email, task.pid);
-        }
-
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Server error", details: error.message });
