@@ -65,7 +65,11 @@ app.post("/register", upload.single("transactionImage"), async (req, res) => {
             transactionId,
             transactionImage: uploadResult.link,
         });
-        sendMail(participantsNamesEmails[0].email, participantsNamesEmails);
+
+        for (const participant of participantsNamesEmails) {
+            const { name, email } = participant;
+            sendMail(email, participantsNamesEmails);
+        }
         res.status(201).json({
             message: "Registration successful",
             data: registration,
