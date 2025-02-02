@@ -27,6 +27,10 @@ const registrationSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        mailSent: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );
