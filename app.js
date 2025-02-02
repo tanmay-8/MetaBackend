@@ -78,7 +78,10 @@ app.post("/register", upload.single("transactionImage"), async (req, res) => {
             for (const task of emailTasks) {
                 try {
                     await sendMail(task.email, task.pid);
-                    console.log(`Mail sent to ${task.email}`);
+                    await Participant.updateOne(
+                        { pid: task.pid },
+                        { $set: { mailSent: true } }
+                    );
                 } catch (err) {
                     console.error(`Failed to send mail to ${task.email}:`, err);
                 }
