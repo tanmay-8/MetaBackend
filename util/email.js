@@ -177,7 +177,7 @@ const sendMail = async (email, pid) => {
                     >, focusing on Docker & Kubernetes.💜
                   </p>
                   <p>
-                    <strong>Participant ID:</strong> <span style="font-weight: bold; color: #4879e2;"> ${pid} </span>
+                    <strong>Participant ID:</strong> <span style="font-weight: bold; color: #4879e2;"> Meta_${pid} </span>
                   </p>
                   You will have access to all the sessions and activities we
                   have scheduled for the event as a registered participant.
@@ -189,7 +189,6 @@ const sendMail = async (email, pid) => {
                     <strong>Venue:</strong>
                     Main & Mini CCF, WCE
                   </p>
-                  <br />
                   Please do not hesitate to contact us if you have any queries
                   about the event. We will be happy to assist you in any way we
                   can.
