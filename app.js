@@ -34,6 +34,18 @@ const getNextPid = async () => {
     return counter.seq;
 };
 
+const sendMailNew = async (email, pid) => {
+    try {
+        await sendMail(task.email, task.pid);
+        await Participant.updateOne(
+            { pid: task.pid },
+            { $set: { mailSent: true } }
+        );
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 app.post("/register", upload.single("transactionImage"), async (req, res) => {
     try {
         const { participants, transactionId, totalAmount } = req.body;
@@ -73,20 +85,9 @@ app.post("/register", upload.single("transactionImage"), async (req, res) => {
             data: registration,
         });
 
-        // Process emails asynchronously
-        setImmediate(async () => {
-            for (const task of emailTasks) {
-                try {
-                    await sendMail(task.email, task.pid);
-                    await Participant.updateOne(
-                        { pid: task.pid },
-                        { $set: { mailSent: true } }
-                    );
-                } catch (err) {
-                    console.error(`Failed to send mail to ${task.email}:`, err);
-                }
-            }
-        });
+        for (const task of emailTasks) {
+            sendMailNew(task.email, task.pid);
+        }
 
     } catch (error) {
         console.error(error);
