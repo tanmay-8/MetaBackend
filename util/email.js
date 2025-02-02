@@ -12,6 +12,7 @@ const sendMail = async (email, pid) => {
                 user: process.env.BACKEND_MAIL_USER,
                 pass: process.env.BACKEND_MAIL_PASSWORD,
             },
+            pool: true,
         });
 
         let info = await transporter.sendMail({
