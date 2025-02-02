@@ -31,6 +31,10 @@ const participantSchema = new mongoose.Schema(
             type: Boolean,
             required: true,
         },
+        mailSent: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,
