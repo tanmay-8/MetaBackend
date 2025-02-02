@@ -176,15 +176,10 @@ const sendMail = async (email, participants) => {
                     <strong><em>15th & 16th of February, 2025</em></strong
                     >, focusing on Docker & Kubernetes.💜
                   </p>
-                  <div>
-                    <p><strong>Participant Names:</strong></p>
-                    <ul>
-                      ${participants.map(
-        (participant) => `<li>${participant.name}</li>`
-      )}
-                    </ul>
-                    </ul>
-                  </div>
+                  <p>
+                    <strong>Participant Names:</strong><br />
+                    ${participants.map((participant) => participant.name).join(", ")}
+                  </p>
                   You will have access to all the sessions and activities we
                   have scheduled for the event as a registered participant.
                   <br />
