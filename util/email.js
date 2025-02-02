@@ -3,23 +3,28 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const sendMail = async (email, pid) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: process.env.BACKEND_MAIL_HOST,
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.BACKEND_MAIL_USER,
-                pass: process.env.BACKEND_MAIL_PASSWORD,
-            },
-            pool: true,
-        });
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.BACKEND_MAIL_HOST,
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.BACKEND_MAIL_USER,
+        pass: process.env.BACKEND_MAIL_PASSWORD,
+      },
+      pool: true,
+      connectionTimeout: 300000,
+      dnsTimeout: 300000,
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
 
-        let info = await transporter.sendMail({
-            from: process.env.BACKEND_MAIL_USER,
-            to: email,
-            subject: "Registration Successful - Metamorphosis 2K25",
-            html: `<!DOCTYPE html>
+    let info = await transporter.sendMail({
+      from: process.env.BACKEND_MAIL_USER,
+      to: email,
+      subject: "Registration Successful - Metamorphosis 2K25",
+      html: `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -329,15 +334,15 @@ const sendMail = async (email, pid) => {
   </body>
 </html>
 `,
-        });
+    });
 
-        return {
-            info: info,
-            success: true,
-        };
-    } catch (err) {
-        throw new Error(err);
-    }
+    return {
+      info: info,
+      success: true,
+    };
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 module.exports = { sendMail };
