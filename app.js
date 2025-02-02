@@ -47,17 +47,18 @@ app.post("/register", upload.single("transactionImage"), async (req, res) => {
             return res.status(500).json({ error: "Image upload failed" });
 
         const participantIds = [];
-        const toSendMails = [];
+        const emailTasks = [];
+
         for (const user of JSON.parse(participants)) {
             const pid = await getNextPid();
             const participant = await Participant.create({ pid, ...user });
             participantIds.push(participant.pid);
-            toSendMails.push({
-                email: participant.email,
-                pid: participant.pid,
-            });
+
+            // Collect emails to send later
+            emailTasks.push({ email: participant.email, pid });
         }
 
+        // Save registration data
         const registration = await Registration.create({
             numOfParticipants: participantIds.length,
             participants: participantIds,
@@ -66,22 +67,30 @@ app.post("/register", upload.single("transactionImage"), async (req, res) => {
             transactionImage: uploadResult.link,
         });
 
-        for (const mail of toSendMails) {
-            try {
-                sendMail(mail.email, mail.pid);
-            } catch (err) {
-                console.error(err);
-            }
-        }   
+        // Respond immediately
         res.status(201).json({
             message: "Registration successful",
             data: registration,
         });
+
+        // Process emails asynchronously
+        setImmediate(async () => {
+            for (const task of emailTasks) {
+                try {
+                    await sendMail(task.email, task.pid);
+                    console.log(`Mail sent to ${task.email}`);
+                } catch (err) {
+                    console.error(`Failed to send mail to ${task.email}:`, err);
+                }
+            }
+        });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Server error", details: error.message });
     }
 });
+
 
 const start = async () => {
     await dbConnect(MONGO_URI);
