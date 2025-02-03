@@ -15,16 +15,16 @@ const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 app.use(cors());
 app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
-    console.log("Hello World");
     res.send("Hello World");
 });
 
+// Optimized getNextPid
 const getNextPid = async () => {
     const counter = await Counter.findOneAndUpdate(
         { name: "participant_pid" },
@@ -34,24 +34,20 @@ const getNextPid = async () => {
     return counter.seq;
 };
 
-
-
 app.post("/register", upload.single("transactionImage"), async (req, res) => {
     try {
         const { participants, transactionId, totalAmount } = req.body;
-        if (!req.file)
-            return res
-                .status(400)
-                .json({ error: "Transaction screenshot is required" });
+        if (!req.file) return res.status(400).json({ error: "Transaction screenshot is required" });
 
         const uploadResult = await uploadCloud(req.file.buffer);
-        if (!uploadResult.success)
-            return res.status(500).json({ error: "Image upload failed" });
+        if (!uploadResult.success) return res.status(500).json({ error: "Image upload failed" });
 
+        const participantData = Array.isArray(participants) ? participants : JSON.parse(participants);
         const participantIds = [];
-        const participantsNamesEmails = []
+        const participantsNamesEmails = [];
 
-        for (const user of JSON.parse(participants)) {
+        // Bulk insert participants
+        for (const user of participantData) {
             const pid = await getNextPid();
             const participant = await Participant.create({ pid, ...user });
             participantIds.push(participant.pid);
@@ -61,31 +57,23 @@ app.post("/register", upload.single("transactionImage"), async (req, res) => {
         const registration = await Registration.create({
             numOfParticipants: participantIds.length,
             participants: participantIds,
-            totalAmount: totalAmount,
+            totalAmount,
             transactionId,
             transactionImage: uploadResult.link,
         });
 
-        for (const participant of participantsNamesEmails) {
-            const { name, email } = participant;
-            sendMail(email, participantsNamesEmails);
-        }
-        res.status(201).json({
-            message: "Registration successful",
-            data: registration,
-        });
+        sendMail(participantsNamesEmails[0].email, participantsNamesEmails).catch(console.error);
+
+        res.status(201).json({ message: "Registration successful", data: registration });
     } catch (error) {
-        console.error(error);
+        console.error("Registration Error:", error);
         res.status(500).json({ error: "Server error", details: error.message });
     }
 });
 
-
 const start = async () => {
     await dbConnect(MONGO_URI);
-    app.listen(PORT, () => {
-        console.log(`Listening on port ${PORT}`);
-    });
+    app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 };
 
 start();
